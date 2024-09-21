@@ -7,7 +7,12 @@
 # SQL-Embedding
 
 ## Motivation
-*SQL-Embedding* allows you to utilize a variety of pre-trained language models to enhance vector search and create embeddings.
+*SQL-Embedding* is a versatile solution that simplifies the process of creating and utilizing embeddings for vector search directly within SQL queries. By providing a unified interface, you can seamlessly access a wide range of embedding models, enabling efficient and effective vector search operations.
+
+### Key Features
+* Simplified Embedding Creation: Easily generate embeddings from your data within SQL queries.
+* Diverse Model Support: Access a variety of embedding models to suit your specific needs.
+* Efficient Vector Search: Perform fast and accurate vector searches directly in your SQL database.
 
 ## Prerequisites
 
