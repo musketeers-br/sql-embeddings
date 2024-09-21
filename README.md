@@ -83,7 +83,9 @@ set sc=$zpm("install sql-embeddings")
 To get started, you can use the following SQL query to generate an embedding for the word 'test':
 
 ```sql
+-- using the default embedding provider/model
 select dc.embedding('test')
+```
 
 # Dream team
 
