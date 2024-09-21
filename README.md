@@ -20,9 +20,9 @@ Make sure you have [git](https://git-scm.com/book/en/v2/Getting-Started-Installi
 
 ## Installation 
 
-### Setting a LLM API key
+### Setting an API key
 
-To utilize the Large Language Model (LLM) service, you'll need an API key. Currently, the project supports OpenAI's LLM service.
+If you're planning to use an online embeddings service, you'll need an API key. Currently, the project supports OpenAI's Embeddings service.
 
 [Obtain your OpenAI API key by creating an account on their platform](https://openai.com/).
 
@@ -38,6 +38,15 @@ When launching the Docker container, you can set the `OPENAI_KEY` the environmen
 # OpenAI API key
 export OPENAI_KEY=$OPENAI_KEY
 ```
+
+### Supported embedding models
+
+Currently, the project supports the following embeddings models/services:
+
+* [FastEmbed](https://fastembed.com/)
+* [OpenAI](https://openai.com/)
+
+By default, the project will use FastEmbed embeddings model. It's free and you don't need an API key to use it.
 
 ### Docker
 
