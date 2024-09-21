@@ -1,5 +1,3 @@
-/// # todo: implement provider parameter
-/// # todo: implement factory design pattern
 Class dc.musketeersbr.sqlembeddings.Embeddings Extends %RegisteredObject
 {
 

@@ -60,7 +60,6 @@ ClassMethod StartServerPy(port As %Integer) [ Language = python, Private ]
             print(f"Model '{providerName}' already loaded, skipping...")
             model = loadedProviders[providerName]
         else:
-            # todo: import the model from parameters (model and provider) on request formatted in json
             print("Model '{providerName}' not loaded, loading...")
             providerClassName = iris.cls("dc.musketeersbr.sqlembeddings.Embeddings").GetEmbeddingsProvider(providerName)
             print(f"Selected providerClassName: {providerClassName}")
@@ -88,17 +87,9 @@ ClassMethod StartServerPy(port As %Integer) [ Language = python, Private ]
     server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     server_socket.bind(('localhost', port))
     server_socket.listen(5)
-    #; server_socket.timeout(10)
 
-    providerClassName = 'fastembed'
-    modelName = 'BAAI/bge-small-en-v1.5'
     loadedProviders = {}
-    model = None
     error_msg = None
-    try:
-        model, loadedProviders = load_provider(providerClassName, modelName, loadedProviders)
-    except Exception as e:
-        error_msg = f"Error loading model: {e}"
 
     print(f"Server listening on port {port}...")
 
@@ -109,7 +100,6 @@ ClassMethod StartServerPy(port As %Integer) [ Language = python, Private ]
 
             # if there was an error loading the model, send an error message
             if error_msg is not None:
-                # todo: structure the error message in json
                 request = json.dumps({'error': error_msg})
                 print(f"Sending error: {request}")
                 client_socket.sendall(request.encode('utf-8'))
@@ -247,12 +237,6 @@ ClassMethod StartClientPy(message As %DynamicObject, server As %String = "localh
         #; iris.cls("dc.musketeersbr.sqlembeddings.Socket").SaveCurrentProcessID(pid)
         #; iris.cls("dc.musketeersbr.sqlembeddings.Socket").SaveCurrentPort(port)
 
-        #; for i in range(60):
-        #;     print(f"Waiting for server to start on port {port}...")
-        #;     if not check_if_server_is_down(server, port):
-        #;         print(f"Server on port {port} is up.")
-        #;         break
-        #;     time.sleep(1)
         time.sleep(.5)
 
     signal.signal(signal.SIGTERM, signal_handler)
@@ -278,7 +262,6 @@ ClassMethod StartClientPy(message As %DynamicObject, server As %String = "localh
             start_new_server(port)
 
         client_socket.connect((server, port))
-        # todo: structure the message in json with model and provider
         document = message._Get('document')
         modelName = message._Get('modelName')
         request = json.dumps({'document': document, 'modelFQN': modelName})
@@ -286,7 +269,6 @@ ClassMethod StartClientPy(message As %DynamicObject, server As %String = "localh
         response = client_socket.recv(999999).decode('utf-8')
         response = json.loads(response)
 
-        # todo: read the error expecting a message in json
         # check if the server response is about an error
         if "error" in response:
             # raise an exception with the error message
