@@ -12,6 +12,8 @@ Class dc.musketeersbr.sqlembeddings.Socket Extends %RegisteredObject
 /// @param pPort The port number to listen on.
 ClassMethod StartServer(pPort As %Integer)
 {
+    Do ##class(dc.musketeersbr.sqlembeddings.Socket).SaveCurrentProcessID($JOB)
+    Do ##class(dc.musketeersbr.sqlembeddings.Socket).SaveCurrentPort(pPort)
     Do ..StartServerPy(pPort)
 }
 
@@ -24,36 +26,6 @@ ClassMethod StartServerBackground(pPort As %Integer) As %Integer [ Private ]
     Job ..StartServer(pPort)
     Set pID = $ZCHILD
     Return pID
-}
-
-/// Loads an ebedding model from the given model name.
-/// 
-/// @param modelName The name of the model to be loaded.
-/// @return The loaded model as a %SYS.Python object.
-ClassMethod LoadEmbeddingModelPy(modelName As %String) As %SYS.Python [ Language = python ]
-{
-    import sentence_transformers
-
-    model = sentence_transformers.SentenceTransformer(modelName)
-    return model
-}
-
-/// Executes the embeddings using the given model and data.
-/// 
-/// This method is a wrapper around the Hugging Face Transformers library and
-/// is used to execute the embeddings using the given model and data.
-/// 
-/// Args:
-///     data (str): The data to be embedded.
-///     model: The model to be used for embeddings.
-/// 
-/// Returns:
-///     str: The embeddings as a string.
-ClassMethod ExecuteEmbeddingsPy(data As %String, model As %SYS.Python) [ Language = python, Private ]
-{
-    embeddings = model.encode(data.decode('utf-8'))
-    embeddings_list = [str(embedding.tolist()) for embedding in embeddings]
-    return str(embeddings_list).encode('utf-8')
 }
 
 /// Starts a server in Python to handle incoming connections and generate embeddings using a specified model.
@@ -92,10 +64,15 @@ ClassMethod StartServerPy(port As %Integer) [ Language = python, Private ]
 
     error_msg = ""
     try:
-        # todo: import the model from parameter
-        model = iris.cls("dc.musketeersbr.sqlembeddings.Socket").LoadEmbeddingModelPy('all-MiniLM-L6-v2')
+        # todo: import the model from parameters (model and provider) on request formatted in json
+        print("Loading model...")
+        provider = iris.cls("dc.musketeersbr.sqlembeddings.Embeddings").GetEmbeddingsProvider('fastembed')
+        print(f"Selected provider: {provider}")
+        model = iris.cls(provider).LoadEmbeddingModel('BAAI/bge-small-en-v1.5')
+        print(f"Selected model: {model}")
     except Exception as e:
         error_msg = f"Error loading model: {e}"
+        provider = None
         model = None
 
     print(f"Server listening on port {port}...")
@@ -107,12 +84,14 @@ ClassMethod StartServerPy(port As %Integer) [ Language = python, Private ]
 
             # if there was an error loading the model, send an error message
             if error_msg != "":
+                # todo: structure the error message in json
                 client_socket.sendall(error_msg.encode('utf-8'))
             else:
                 data = client_socket.recv(99999)
                 if data:
                     print(f"Received: {data.decode('utf-8')}")
-                    embeddings_string = iris.cls("dc.musketeersbr.sqlembeddings.Socket").ExecuteEmbeddingsPy(data, model)
+                    embeddings_string = iris.cls(provider).ExecuteEmbeddings(data.decode('utf-8'), model)
+                    embeddings_string = embeddings_string.encode('utf-8')
                     client_socket.sendall(embeddings_string)
             client_socket.close()
 
@@ -190,7 +169,7 @@ ClassMethod StartClientPy(message As %String, server As %String = "localhost", p
         sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         sock.settimeout(5)
         result = sock.connect_ex((server, port))
-        print(f"Server is down on port {port}: {result != 0}")
+        print(f"Server is {'up' if result == 0 else 'down'} on port {port}.")
         return result != 0
 
     def kill_server():
@@ -228,15 +207,16 @@ ClassMethod StartClientPy(message As %String, server As %String = "localhost", p
 
         print(f"Starting a new server on port {port}...")
         pid = iris.cls("dc.musketeersbr.sqlembeddings.Socket").StartServerBackground(port)
-        iris.cls("dc.musketeersbr.sqlembeddings.Socket").SaveCurrentProcessID(pid)
-        iris.cls("dc.musketeersbr.sqlembeddings.Socket").SaveCurrentPort(port)
+        #; iris.cls("dc.musketeersbr.sqlembeddings.Socket").SaveCurrentProcessID(pid)
+        #; iris.cls("dc.musketeersbr.sqlembeddings.Socket").SaveCurrentPort(port)
 
-        for i in range(60):
-            print(f"Waiting for server to start on port {port}...")
-            if not check_if_server_is_down(server, port):
-                print(f"Server on port {port} is up.")
-                break
-            time.sleep(1)
+        #; for i in range(60):
+        #;     print(f"Waiting for server to start on port {port}...")
+        #;     if not check_if_server_is_down(server, port):
+        #;         print(f"Server on port {port} is up.")
+        #;         break
+        #;     time.sleep(1)
+        time.sleep(.5)
 
     signal.signal(signal.SIGTERM, signal_handler)
     signal.signal(signal.SIGINT, signal_handler)
@@ -261,9 +241,11 @@ ClassMethod StartClientPy(message As %String, server As %String = "localhost", p
             start_new_server(port)
 
         client_socket.connect((server, port))
+        # todo: structure the message in json with model and provider
         client_socket.sendall(message.encode('utf-8'))
         data = client_socket.recv(999999).decode('utf-8')
 
+        # todo: read the error expecting a message in json
         # check if the server response is about an error
         if "Error" in data:
             # raise an exception with the error message

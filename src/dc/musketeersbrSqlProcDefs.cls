@@ -9,7 +9,7 @@ Class dc.musketeersbrSqlProcDefs Extends %RegisteredObject
 /// @param valueToEmbed The value to be embedded.
 /// @param modelName The name of the model to be used.
 /// @return A vector of doubles representing the embeddings.
-ClassMethod Embedding(valueToEmbed = "", modelName As %String = "all-MiniLM-L6-v2") As %Vector [ SqlName = embedding, SqlProc ]
+ClassMethod Embedding(valueToEmbed = "", modelName As %String = "fastembed/BAAI/bge-small-en-v1.5") As %Vector [ SqlName = embedding, SqlProc ]
 {
     Set obj = ##class(dc.musketeersbr.sqlembeddings.Main).%New(valueToEmbed, modelName)
     Return obj.Execute()

@@ -13,7 +13,8 @@ WORKDIR /home/irisowner/dev
 ##RUN apt update && apt-get -y install git
 ##USER ${ISC_PACKAGE_MGRUSER}
 
-RUN pip install -U sentence_transformers
+# RUN pip install -U sentence_transformers
+RUN pip install --upgrade --quiet langchain langchain-community langchain-openai fastembed
 
 ARG TESTS=0
 ARG MODULE="dc-sample"
