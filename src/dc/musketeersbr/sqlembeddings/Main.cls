@@ -59,16 +59,17 @@ Method Validate() As %Status
 /// @return An empty vector.
 Method Execute() As %Vector
 {
-    Return ..GetEmbeddings(..ValueToEmbed)
+    Return ..GetEmbeddings(..ValueToEmbed, ..ModelName)
 }
 
 /// Gets the embeddings for the given sentences using the socket client.
 /// 
 /// @param sentences The sentences to be embedded.
 /// @return A vector of doubles representing the embeddings.
-ClassMethod GetEmbeddings(sentences) As %Vector
+ClassMethod GetEmbeddings(sentences, modelName) As %Vector
 {
-    Set response = ##class(dc.musketeersbr.sqlembeddings.Socket).StartClient(sentences)
+    Set request = {"document": (sentences), "modelName": (modelName)}
+    Set response = ##class(dc.musketeersbr.sqlembeddings.Socket).StartClient(request)
     /// Replace single quotes with nothing (todo: find out how to get only numbers)
     Set response = $REPLACE(response, "'", "")
 

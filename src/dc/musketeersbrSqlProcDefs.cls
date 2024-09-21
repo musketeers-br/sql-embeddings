@@ -1,3 +1,4 @@
+/// Definition for the Stored Function dc.embedding()
 Class dc.musketeersbrSqlProcDefs Extends %RegisteredObject
 {
 

@@ -9,6 +9,8 @@ ClassMethod GetEmbeddingsProvider(providerName As %String) As %String
         Return "dc.musketeersbr.sqlembeddings.providers.SentenceTransformers"
     } ElseIf providerName = "fastembed" {
         Return "dc.musketeersbr.sqlembeddings.providers.FastEmbed"
+    } ElseIf providerName = "openai" {
+        Return "dc.musketeersbr.sqlembeddings.providers.OpenAI"
     } Else {
         Throw ##class(%Exception.General).%New("Invalid provider name")
     }

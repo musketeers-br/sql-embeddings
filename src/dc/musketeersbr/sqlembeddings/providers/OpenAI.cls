@@ -28,7 +28,6 @@ ClassMethod ExecuteEmbeddings(data As %String, model As %SYS.Python) As %String 
 {
     documents = [data]
     embeddings_list = model.embed_documents(documents)[0]
-    #; embeddings_list = [embedding.tolist() for embedding in embeddings_list]
     return str(embeddings_list)
 }
 

@@ -41,6 +41,7 @@ ClassMethod StartServerPy(port As %Integer) [ Language = python, Private ]
     import signal
     import sys
     import iris
+    import json
 
     def signal_handler(sig, frame):
         """
@@ -54,6 +55,33 @@ ClassMethod StartServerPy(port As %Integer) [ Language = python, Private ]
         server_socket.close()
         sys.exit(0)
 
+    def load_provider(providerName, modelName, loadedProviders):
+        if providerName in loadedProviders:
+            print(f"Model '{providerName}' already loaded, skipping...")
+            model = loadedProviders[providerName]
+        else:
+            # todo: import the model from parameters (model and provider) on request formatted in json
+            print("Model '{providerName}' not loaded, loading...")
+            providerClassName = iris.cls("dc.musketeersbr.sqlembeddings.Embeddings").GetEmbeddingsProvider(providerName)
+            print(f"Selected providerClassName: {providerClassName}")
+            model = iris.cls(providerClassName).LoadEmbeddingModel(modelName)
+            print(f"Selected model: {model}")
+            loadedProviders[providerName] = model
+
+        return model, loadedProviders
+
+    def get_provider_from_request(request, loadedProviders):
+        modelFQN = request['modelFQN']
+        providerName = modelFQN.split('/')[0]
+        modelName = '/'.join(modelFQN.split('/')[1:])
+        print(f"Selected modelFQN: {modelFQN}")
+        print(f"Selected providerName: {providerName}")
+        print(f"Selected model: {modelName}")
+
+        model, _ = load_provider(providerName, modelName, loadedProviders)
+        providerClassName = iris.cls("dc.musketeersbr.sqlembeddings.Embeddings").GetEmbeddingsProvider(providerName)
+        return iris.cls(providerClassName), model
+
     signal.signal(signal.SIGTERM, signal_handler)
     signal.signal(signal.SIGINT, signal_handler)
 
@@ -62,18 +90,15 @@ ClassMethod StartServerPy(port As %Integer) [ Language = python, Private ]
     server_socket.listen(5)
     #; server_socket.timeout(10)
 
-    error_msg = ""
+    providerClassName = 'fastembed'
+    modelName = 'BAAI/bge-small-en-v1.5'
+    loadedProviders = {}
+    model = None
+    error_msg = None
     try:
-        # todo: import the model from parameters (model and provider) on request formatted in json
-        print("Loading model...")
-        provider = iris.cls("dc.musketeersbr.sqlembeddings.Embeddings").GetEmbeddingsProvider('fastembed')
-        print(f"Selected provider: {provider}")
-        model = iris.cls(provider).LoadEmbeddingModel('BAAI/bge-small-en-v1.5')
-        print(f"Selected model: {model}")
+        model, loadedProviders = load_provider(providerClassName, modelName, loadedProviders)
     except Exception as e:
         error_msg = f"Error loading model: {e}"
-        provider = None
-        model = None
 
     print(f"Server listening on port {port}...")
 
@@ -83,16 +108,27 @@ ClassMethod StartServerPy(port As %Integer) [ Language = python, Private ]
             print(f"Connection from {addr}")
 
             # if there was an error loading the model, send an error message
-            if error_msg != "":
+            if error_msg is not None:
                 # todo: structure the error message in json
-                client_socket.sendall(error_msg.encode('utf-8'))
+                request = json.dumps({'error': error_msg})
+                print(f"Sending error: {request}")
+                client_socket.sendall(request.encode('utf-8'))
             else:
-                data = client_socket.recv(99999)
-                if data:
-                    print(f"Received: {data.decode('utf-8')}")
-                    embeddings_string = iris.cls(provider).ExecuteEmbeddings(data.decode('utf-8'), model)
-                    embeddings_string = embeddings_string.encode('utf-8')
-                    client_socket.sendall(embeddings_string)
+                request = client_socket.recv(99999)
+                request = request.decode('utf-8')
+                if request:
+                    print(f"Received: {request}")
+
+                    request = json.loads(request)
+                    document = request['document']
+                    provider, model = get_provider_from_request(request, loadedProviders)
+                    print(f"Selected provider: {provider}")
+                    embeddings_string = provider.ExecuteEmbeddings(document, model)
+                    #; embeddings_string = embeddings_string.encode('utf-8')
+                    response = json.dumps({'embeddings': embeddings_string})
+                    client_socket.sendall(response.encode('utf-8'))
+                    print(f"Response sent.")
+
             client_socket.close()
 
     except Exception as e:
@@ -113,13 +149,13 @@ ClassMethod StartServerPy(port As %Integer) [ Language = python, Private ]
 /// @param pPort The port number of the server.
 /// @param pMessage The message to be sent to the server.
 /// @return The response from the server as a string.
-ClassMethod StartClient(pMessage As %String, pServer As %String = "localhost", pPort As %Integer = "") As %String
+ClassMethod StartClient(pMessage As %DynamicObject, pServer As %String = "localhost", pPort As %Integer = "") As %String
 {
     Set embeddings = ..StartClientPy(pMessage, pServer, pPort)
     Return embeddings
 }
 
-ClassMethod StartClientPy(message As %String, server As %String = "localhost", port As %Integer = "") As %String [ Language = python ]
+ClassMethod StartClientPy(message As %DynamicObject, server As %String = "localhost", port As %Integer = "") As %String [ Language = python ]
 {
     import socket
     import os
@@ -127,6 +163,7 @@ ClassMethod StartClientPy(message As %String, server As %String = "localhost", p
     import sys
     import time
     import iris
+    import json
 
     def signal_handler(sig, frame):
         """
@@ -242,16 +279,20 @@ ClassMethod StartClientPy(message As %String, server As %String = "localhost", p
 
         client_socket.connect((server, port))
         # todo: structure the message in json with model and provider
-        client_socket.sendall(message.encode('utf-8'))
-        data = client_socket.recv(999999).decode('utf-8')
+        document = message._Get('document')
+        modelName = message._Get('modelName')
+        request = json.dumps({'document': document, 'modelFQN': modelName})
+        client_socket.sendall(request.encode('utf-8'))
+        response = client_socket.recv(999999).decode('utf-8')
+        response = json.loads(response)
 
         # todo: read the error expecting a message in json
         # check if the server response is about an error
-        if "Error" in data:
+        if "error" in response:
             # raise an exception with the error message
-            raise Exception(data)
+            raise Exception(response["error"])
 
-        return data
+        return response["embeddings"]
 
     except ConnectionRefusedError:
         print("[Error] Connection refused: Server may be down or not accepting connections.")
