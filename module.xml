@@ -1,15 +1,15 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Export generator="Cache" version="25">
-  <Document name="dc-sample.ZPM">
+  <Document name="sql-embeddings.ZPM">
     <Module>
-      <Name>dc-sample</Name>
-      <Version>2.0.5</Version>
-      <Description>Basic InterSystems IRIS Development Template</Description>
+      <Name>sql-embeddings</Name>
+      <Version>0.0.6</Version>
+      <Description>Work with embeddings directly in SQL for InterSystems IRIS Vector Search</Description>
       <Packaging>module</Packaging>
       <SourcesRoot>src</SourcesRoot>
-      <Resource Name="dc.sample.PKG"/>
-      <UnitTest Name="/tests" Package="dc.sample.unittests" Phase="test"/>
-
+      <Resource Name="dc.musketeersbr.sqlembeddings.PKG"/>
+      <Resource Name="dc.musketeersbrSqlProcDefs.CLS"/>
+      <UnitTest Name="/tests" Package="dc.musketeersbr.sqlembeddings.unittests" Phase="test"/>
     </Module>
   </Document>
 </Export>

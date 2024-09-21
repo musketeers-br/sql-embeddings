@@ -13,6 +13,8 @@ WORKDIR /home/irisowner/dev
 ##RUN apt update && apt-get -y install git
 ##USER ${ISC_PACKAGE_MGRUSER}
 
+RUN pip install -U sentence_transformers
+
 ARG TESTS=0
 ARG MODULE="dc-sample"
 ARG NAMESPACE="IRISAPP"
