@@ -92,13 +92,17 @@ Note that you'll need to install the libraries manually. If you don't, you'll ge
 dc.embedding('<text>', '<provider>/<modelName>')
 ```
 
-## Example
+## Examples
 To get started, you can use the following SQL query to generate an embedding for the word 'test':
 
 ```sql
 -- using the default embedding provider/model to get the embeddings vector
 select dc.embedding('test')
+```
 
+The following a more complex example that creates a table to store the embeddings, generate and insert embeddings, query the table and show the results and get the similarity between 'my text' and 'lorem ipsum': 
+
+```sql
 -- table with two vector columns to store the embeddings
 -- pay attention to the vectors dimensions, they must be the same as the model used
 create table testvector(
@@ -121,6 +125,18 @@ insert into testvector (
 
 -- show the results
 select * from testvector
+
+-- show the similarity between 'my text' and 'lorem ipsum'
+select 
+    VECTOR_DOT_PRODUCT(
+        embFastEmbed, 
+        dc.embedding('my text', 'fastembed/BAAI/bge-small-en-v1.5')
+    ) "Similariy between 'my text' and itself", 
+    VECTOR_DOT_PRODUCT(
+        embFastEmbed, 
+        dc.embedding('lorem ipsum', 'fastembed/BAAI/bge-small-en-v1.5')
+    ) "Similariy between the 'my text' and 'lorem ipsum'" 
+from testvector
 ```
 
 > Note that the first execution will take a few seconds to generate the embeddings since the libraries not loaded yet. The subsequent executions will be much faster.
