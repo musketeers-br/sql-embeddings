@@ -123,6 +123,10 @@ ClassMethod StartServerPy(port As %Integer) [ Language = python, Private ]
 
     except Exception as e:
         print(f"Error: {e}")
+        error_msg = str(e)
+        request = json.dumps({'error': error_msg})
+        print(f"Sending error: {request}")
+        client_socket.sendall(request.encode('utf-8'))
 
     finally:
         server_socket.close()
