@@ -1,3 +1,4 @@
+/// https://python.langchain.com/docs/integrations/text_embedding/openai/
 Class dc.musketeersbr.sqlembeddings.providers.OpenAI Extends %RegisteredObject
 {
 

@@ -1,3 +1,4 @@
+/// https://github.com/qdrant/fastembed
 Class dc.musketeersbr.sqlembeddings.providers.FastEmbed Extends ProviderAbstract
 {
 
