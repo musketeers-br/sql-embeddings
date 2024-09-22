@@ -1,6 +1,6 @@
  [![Gitter](https://img.shields.io/badge/Available%20on-Intersystems%20Open%20Exchange-00b2a9.svg)](https://openexchange.intersystems.com/package/sql-embedding)
- [![Quality Gate Status](https://community.objectscriptquality.com/api/project_badges/measure?project=intersystems_iris_community%2Fsql-embeddings&metric=alert_status)](https://community.objectscriptquality.com/dashboard?id=intersystems_iris_community%2Fsql-embeddings)
- [![Reliability Rating](https://community.objectscriptquality.com/api/project_badges/measure?project=intersystems_iris_community%2Fsql-embeddings&metric=reliability_rating)](https://community.objectscriptquality.com/dashboard?id=intersystems_iris_community%2Fsql-embeddings)
+ [![Quality Gate Status](https://community.objectscriptquality.com/api/project_badges/measure?project=intersystems_iris_community__sql-embeddings&metric=alert_status)](https://community.objectscriptquality.com/dashboard?id=intersystems_iris_community__sql-embeddings&metric=alert_status)
+ [![Reliability Rating](https://community.objectscriptquality.com/api/project_badges/measure?project=intersystems_iris_community__sql-embeddings&metric=reliability_rating)](https://community.objectscriptquality.com/dashboard?id=intersystems_iris_community__sql-embeddings&metric=reliability_rating)
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg?style=flat&logo=AdGuard)](LICENSE)
 
