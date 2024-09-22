@@ -43,11 +43,11 @@ export OPENAI_KEY=$OPENAI_KEY
 
 Currently, the project supports the following embeddings models/services, here called providers:
 
-| Provider ID | Provider information |
+| Provider ID | Provider supported models |
 |-------------|----------------------|
-| fastembed | [FastEmbed](https://fastembed.com/) |
-| openai | [OpenAI](https://openai.com/) |
-| sentence_transformers | [SentenceTransformers](https://www.sbert.net/) |
+| fastembed | [FastEmbed](https://qdrant.github.io/fastembed/examples/Supported_Models/#supported-text-embedding-models) |
+| openai | [OpenAI](https://platform.openai.com/docs/models/embeddings) |
+| sentence_transformers | [SentenceTransformers](https://sbert.net/docs/sentence_transformer/pretrained_models.html#original-models) |
 
 By default, the project will use FastEmbed embeddings model. It's free and you don't need an API key to use it.
 
@@ -119,6 +119,8 @@ insert into testvector (
     'my text', 
     -- get the fastembed embeddings using the BAAI/bge-small-en-v1.5 model
     dc.embedding('my text', 'fastembed/BAAI/bge-small-en-v1.5'), 
+    -- get the fastembed embeddings using another model (jinaai/jina-embeddings-v2-small-en)
+    dc.embedding('my text', 'fastembed/jinaai/jina-embeddings-v2-small-en')
     -- get the openai embeddings using the text-embedding-3-small model
     dc.embedding('my text', 'openai/text-embedding-3-small')
 )
