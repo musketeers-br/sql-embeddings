@@ -66,7 +66,7 @@ Method Execute() As %Vector
 /// 
 /// @param sentences The sentences to be embedded.
 /// @return A vector of doubles representing the embeddings.
-ClassMethod GetEmbeddings(sentences, modelName) As %Vector
+ClassMethod GetEmbeddings(sentences, modelName = "fastembed/BAAI/bge-small-en-v1.5") As %Vector
 {
     Set request = {"document": (sentences), "modelName": (modelName)}
     Set response = ##class(dc.musketeersbr.sqlembeddings.Socket).StartClient(request)
