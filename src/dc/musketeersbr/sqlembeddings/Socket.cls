@@ -12,9 +12,15 @@ Class dc.musketeersbr.sqlembeddings.Socket Extends %RegisteredObject
 /// @param pPort The port number to listen on.
 ClassMethod StartServer(pPort As %Integer)
 {
-    Do ##class(dc.musketeersbr.sqlembeddings.Socket).SaveCurrentProcessID($JOB)
-    Do ##class(dc.musketeersbr.sqlembeddings.Socket).SaveCurrentPort(pPort)
-    Do ..StartServerPy(pPort)
+    Try {
+        Do ##class(dc.musketeersbr.sqlembeddings.Socket).SaveCurrentProcessID($JOB)
+        Do ##class(dc.musketeersbr.sqlembeddings.Socket).SaveCurrentPort(pPort)
+        Do ..StartServerPy(pPort)
+    } Catch e {
+        Set error = $System.Status.GetErrorText(e.AsStatus())
+        Do ##class(dc.musketeersbr.sqlembeddings.Socket).LogServer(error)
+        Throw e
+    }
 }
 
 /// Start the embeddings services server in the background on the given port.
@@ -145,7 +151,13 @@ ClassMethod StartServerPy(port As %Integer) [ Language = python, Private ]
 /// @return The response from the server as a string.
 ClassMethod StartClient(pMessage As %DynamicObject, pServer As %String = "localhost", pPort As %Integer = "") As %String
 {
-    Set embeddings = ..StartClientPy(pMessage, pServer, pPort)
+    Try {
+        Set embeddings = ..StartClientPy(pMessage, pServer, pPort)
+    } Catch e {
+        Set error = $System.Status.GetErrorText(e.AsStatus())
+        Do ##class(dc.musketeersbr.sqlembeddings.Socket).LogClient(error)
+        Throw e
+    }
     Return embeddings
 }
 
