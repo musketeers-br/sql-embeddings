@@ -25,7 +25,7 @@ ClassMethod LoadEmbeddingModel(modelName As %String = "BAAI/bge-small-en-v1.5") 
 /// 
 /// Returns:
 ///     str: The embeddings as a string.
-ClassMethod ExecuteEmbeddings(data As %String, model As %SYS.Python) As %String [ Language = python, Private ]
+ClassMethod ExecuteEmbeddings(data As %String, model As %SYS.Python) As %String [ Language = python ]
 {
     documents = [data]
     embeddings_list = list(model.embed(documents))[0]

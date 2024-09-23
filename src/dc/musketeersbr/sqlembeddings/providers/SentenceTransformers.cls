@@ -24,7 +24,7 @@ ClassMethod LoadEmbeddingModel(modelName As %String) As %SYS.Python [ Language =
 /// 
 /// Returns:
 ///     str: The embeddings as a string.
-ClassMethod ExecuteEmbeddings(data As %String, model As %SYS.Python) As %String [ Language = python, Private ]
+ClassMethod ExecuteEmbeddings(data As %String, model As %SYS.Python) As %String [ Language = python ]
 {
     embeddings = model.encode(data)
     embeddings_list = [str(embedding.tolist()) for embedding in embeddings]

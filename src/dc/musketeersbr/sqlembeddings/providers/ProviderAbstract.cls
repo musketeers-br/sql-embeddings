@@ -20,7 +20,7 @@ ClassMethod LoadEmbeddingModel(modelName As %String) As %SYS.Python [ Abstract, 
 /// 
 /// Returns:
 ///     str: The embeddings as a string.
-ClassMethod ExecuteEmbeddings(data As %String, model As %SYS.Python) As %String [ Abstract, Language = python, Private ]
+ClassMethod ExecuteEmbeddings(data As %String, model As %SYS.Python) As %String [ Abstract, Language = python ]
 {
 }
 

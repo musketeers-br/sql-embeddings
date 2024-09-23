@@ -25,7 +25,7 @@ ClassMethod LoadEmbeddingModel(modelName As %String = "text-embedding-3-small") 
 /// 
 /// Returns:
 ///     str: The embeddings as a string.
-ClassMethod ExecuteEmbeddings(data As %String, model As %SYS.Python) As %String [ Language = python, Private ]
+ClassMethod ExecuteEmbeddings(data As %String, model As %SYS.Python) As %String [ Language = python ]
 {
     documents = [data]
     embeddings_list = model.embed_documents(documents)[0]
