@@ -22,6 +22,7 @@
 
     // Install webterminal
     zpm "install webterminal"
+    zpm "install iterm"
 
     // Configure %UnitTest in IRISAPP to suit the VS Code extension
     set ^UnitTestRoot="/usr/irissys/.vscode/IRISAPP/UnitTestRoot"
