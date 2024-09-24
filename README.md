@@ -18,6 +18,52 @@
 
 Make sure you have [git](https://git-scm.com/book/en/v2/Getting-Started-Installing-Git) and [Docker desktop](https://www.docker.com/products/docker-desktop) installed.
 
+## Online demo
+
+> **Note, due instability reasons when downloading models that we can't figure out why, some models are disabled by default. Thus, only the model langchain/fake-provider is available in the demo.** Our apologies for this.
+
+To access the demo, go to [SQL Portal](https://sql-embeddings.demo.community.intersystems.com/csp/sys/exp/%25CSP.UI.Portal.SQL.Home.zen?$NAMESPACE=IRISAPP).
+
+Then use the following SQL query to generate an embedding for the word 'test':
+
+```sql
+select dc.embedding('test', 'langchain/fake-provider')
+```
+
+```sql
+-- table with two vector columns to store the embeddings
+-- pay attention to the vectors dimensions, they must be the same as the model used
+create table testtable(
+    document varchar(1024),         -- the text to be embedded
+    embeddings vector(double, 384)  -- store fastembed embeddings using its model bge-small-en-v1.5
+)
+```
+
+```sql
+insert into testtable (
+    document, 
+    embeddings
+) values (
+    'my text', 
+    dc.embedding('my text', 'langchain/fake-provider')
+)
+```
+
+```sql
+-- show the results
+select * from testtable
+```
+
+```sql
+-- using VECTOR_DOT_PRODUCT function on the generated embeddings and ad-hoc embeddings
+select 
+    VECTOR_DOT_PRODUCT(
+        embeddings, 
+        dc.embedding('my text', 'langchain/fake-provider')
+    )  
+from testtable
+```
+
 ## Installation 
 
 ### Setting an API key
@@ -53,7 +99,9 @@ By default, the project will use FastEmbed embeddings model. It's free and you d
 
 ### Docker
 
-For your convenience, the project uses [Docker Compose](https://docs.docker.com/compose/) to build and run the containers. Note that in the case of SentenceTransformers, you'll need to install the SentenceTransformers library manually, since this library is big and takes a long time to install making the build process slow.
+For your convenience, the project uses [Docker Compose](https://docs.docker.com/compose/) to build and run the containers.
+
+Note that in the case of SentenceTransformers, you'll need to install the SentenceTransformers library manually, since this library is big and takes a long time to install making the build process slow.
 
 Clone/git pull the repo into any local directory
 
@@ -100,48 +148,56 @@ To get started, you can use the following SQL query to generate an embedding for
 select dc.embedding('test')
 ```
 
-The following a more complex example that creates a table to store the embeddings, generate and insert embeddings, query the table and show the results and get the similarity between 'my text' and 'lorem ipsum': 
+The following a more complex examples that creates a table to store the embeddings, generate and insert embeddings, query the table and show the results and get the similarity between 'my text' and 'lorem ipsum': 
 
 ```sql
 -- table with two vector columns to store the embeddings
 -- pay attention to the vectors dimensions, they must be the same as the model used
 create table testvector(
-    document varchar(1024),             -- the text to be embedded
-    embFastEmbed vector(double, 384),   -- store fastembed embeddings
-    embOpenAI vector(double, 1536)      -- store openai embeddings
+    document varchar(1024),                     -- the text to be embedded
+    embFastEmbedModel1 vector(double, 384),     -- store fastembed embeddings using its model bge-small-en-v1.5
+    embFastEmbedModel2 vector(double, 384),     -- store fastembed embeddings using its model jina-embeddings-v2-small-en
+    embOpenAI vector(double, 1536)              -- store openai embeddings
 )
+```
 
+```sql
 insert into testvector (
     document, 
-    embFastEmbed, 
+    embFastEmbedModel1, 
+    embFastEmbedModel2, 
     embOpenAI
 ) values (
     'my text', 
     -- get the fastembed embeddings using the BAAI/bge-small-en-v1.5 model
     dc.embedding('my text', 'fastembed/BAAI/bge-small-en-v1.5'), 
     -- get the fastembed embeddings using another model (jinaai/jina-embeddings-v2-small-en)
-    dc.embedding('my text', 'fastembed/jinaai/jina-embeddings-v2-small-en')
+    dc.embedding('my text', 'fastembed/jinaai/jina-embeddings-v2-small-en'),
     -- get the openai embeddings using the text-embedding-3-small model
     dc.embedding('my text', 'openai/text-embedding-3-small')
 )
+```
 
+```sql
 -- show the results
 select * from testvector
+```
 
+```sql
 -- show the similarity between 'my text' and 'lorem ipsum'
 select 
     VECTOR_DOT_PRODUCT(
-        embFastEmbed, 
+        embFastEmbedModel1, 
         dc.embedding('my text', 'fastembed/BAAI/bge-small-en-v1.5')
     ) "Similariy between 'my text' and itself", 
     VECTOR_DOT_PRODUCT(
-        embFastEmbed, 
+        embFastEmbedModel1, 
         dc.embedding('lorem ipsum', 'fastembed/BAAI/bge-small-en-v1.5')
     ) "Similariy between the 'my text' and 'lorem ipsum'" 
 from testvector
 ```
 
-> Note that the first execution will take a few seconds to generate the embeddings since the libraries not loaded yet. The subsequent executions will be much faster.
+> Note that the first execution of each model will take a few seconds to generate the embeddings since the libraries not loaded yet. The subsequent executions will be much faster.
 
 # Dream team
 
