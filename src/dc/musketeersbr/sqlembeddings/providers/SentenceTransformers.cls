@@ -5,7 +5,7 @@ Class dc.musketeersbr.sqlembeddings.providers.SentenceTransformers Extends Provi
 /// 
 /// @param modelName The name of the model to be loaded.
 /// @return The loaded model as a %SYS.Python object.
-ClassMethod LoadEmbeddingModel(modelName As %String) As %SYS.Python [ Language = python ]
+ClassMethod ExecuteLoadModel(modelName As %String) As %SYS.Python [ Language = python ]
 {
     import sentence_transformers
 
@@ -24,7 +24,7 @@ ClassMethod LoadEmbeddingModel(modelName As %String) As %SYS.Python [ Language =
 /// 
 /// Returns:
 ///     str: The embeddings as a string.
-ClassMethod ExecuteEmbeddings(data As %String, model As %SYS.Python) As %String [ Language = python ]
+ClassMethod ExecuteEmbeddings(data As %String, model As %SYS.Python) As %String [ Language = python, Private ]
 {
     embeddings = model.encode(data)
     embeddings_list = [str(embedding.tolist()) for embedding in embeddings]

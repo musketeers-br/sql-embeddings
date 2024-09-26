@@ -6,7 +6,7 @@ Class dc.musketeersbr.sqlembeddings.providers.FastEmbed Extends ProviderAbstract
 /// 
 /// @param modelName The name of the model to be loaded.
 /// @return The loaded model as a %SYS.Python object.
-ClassMethod LoadEmbeddingModel(modelName As %String = "BAAI/bge-small-en-v1.5") As %SYS.Python [ Language = python ]
+ClassMethod ExecuteLoadModel(modelName As %String = "BAAI/bge-small-en-v1.5") As %SYS.Python [ Language = python ]
 {
     from fastembed import TextEmbedding
 
@@ -25,7 +25,7 @@ ClassMethod LoadEmbeddingModel(modelName As %String = "BAAI/bge-small-en-v1.5") 
 /// 
 /// Returns:
 ///     str: The embeddings as a string.
-ClassMethod ExecuteEmbeddings(data As %String, model As %SYS.Python) As %String [ Language = python ]
+ClassMethod ExecuteEmbeddings(data As %String, model As %SYS.Python) As %String [ Language = python, Private ]
 {
     documents = [data]
     embeddings_list = list(model.embed(documents))[0]

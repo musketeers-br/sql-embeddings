@@ -94,6 +94,7 @@ Currently, the project supports the following embeddings models/services, here c
 | fastembed | [FastEmbed](https://qdrant.github.io/fastembed/examples/Supported_Models/#supported-text-embedding-models) |
 | openai | [OpenAI](https://platform.openai.com/docs/models/embeddings) |
 | sentence_transformers | [SentenceTransformers](https://sbert.net/docs/sentence_transformer/pretrained_models.html#original-models) |
+| langchain | [Langchain (just fake emebeddings for testing purposes)](https://python.langchain.com/docs/integrations/text_embedding/fake/) |
 
 By default, the project will use FastEmbed embeddings model. It's free and you don't need an API key to use it.
 

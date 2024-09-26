@@ -6,7 +6,7 @@ Class dc.musketeersbr.sqlembeddings.providers.FakeEmbeddings Extends ProviderAbs
 /// 
 /// @param modelName The name of the model to be loaded.
 /// @return The loaded model as a %SYS.Python object.
-ClassMethod LoadEmbeddingModel(modelName As %String = "fake-embeddings") As %SYS.Python [ Language = python ]
+ClassMethod ExecuteLoadModel(modelName As %String = "fake-embeddings") As %SYS.Python [ Language = python ]
 {
     from langchain_community.embeddings import FakeEmbeddings
 
@@ -25,7 +25,7 @@ ClassMethod LoadEmbeddingModel(modelName As %String = "fake-embeddings") As %SYS
 /// 
 /// Returns:
 ///     str: The embeddings as a string.
-ClassMethod ExecuteEmbeddings(data As %String, model As %SYS.Python) As %String [ Language = python ]
+ClassMethod ExecuteEmbeddings(data As %String, model As %SYS.Python) As %String [ Language = python, Private ]
 {
     documents = [data]
     embeddings_list = list(model.embed_documents(documents))[0]

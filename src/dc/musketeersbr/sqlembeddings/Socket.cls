@@ -18,7 +18,7 @@ ClassMethod StartServer(pPort As %Integer)
         Do ..StartServerPy(pPort)
     } Catch e {
         Set error = $System.Status.GetErrorText(e.AsStatus())
-        Do ##class(dc.musketeersbr.sqlembeddings.Socket).LogServer(error)
+        Do ##class(dc.musketeersbr.sqlembeddings.Socket).LogServer(error, "ERROR")
         Throw e
     }
 }
@@ -57,20 +57,20 @@ ClassMethod StartServerPy(port As %Integer) [ Language = python, Private ]
         :param frame: The current stack frame.
         :return: None
         """
-        iris.cls('dc.musketeersbr.sqlembeddings.Socket').LogServer("Server shutting down gracefully...")
+        iris.cls(__name__).LogServer("Server shutting down gracefully...", "INFO")
         server_socket.close()
         sys.exit(0)
 
     def load_provider(providerName, modelName, loadedProviders):
         if providerName in loadedProviders:
-            iris.cls('dc.musketeersbr.sqlembeddings.Socket').LogServer(f"Model '{providerName}' already loaded, skipping...")
+            iris.cls(__name__).LogServer(f"Model '{providerName}' already loaded, skipping...")
             model = loadedProviders[providerName]
         else:
-            iris.cls('dc.musketeersbr.sqlembeddings.Socket').LogServer("Model '{providerName}' not loaded, loading...")
+            iris.cls(__name__).LogServer(f"Model '{providerName}' not loaded, loading...")
             providerClassName = iris.cls("dc.musketeersbr.sqlembeddings.Embeddings").GetEmbeddingsProvider(providerName)
-            iris.cls('dc.musketeersbr.sqlembeddings.Socket').LogServer(f"Selected providerClassName: {providerClassName}")
-            model = iris.cls(providerClassName).LoadEmbeddingModel(modelName)
-            iris.cls('dc.musketeersbr.sqlembeddings.Socket').LogServer(f"Selected model: {model}")
+            iris.cls(__name__).LogServer(f"Selected providerClassName: {providerClassName}")
+            model = iris.cls(providerClassName).LoadEmbeddingModel(modelName, providerClassName)
+            iris.cls(__name__).LogServer(f"Selected model: {model}")
             loadedProviders[providerName] = model
 
         return model, loadedProviders
@@ -79,13 +79,13 @@ ClassMethod StartServerPy(port As %Integer) [ Language = python, Private ]
         modelFQN = request['modelFQN']
         providerName = modelFQN.split('/')[0]
         modelName = '/'.join(modelFQN.split('/')[1:])
-        iris.cls('dc.musketeersbr.sqlembeddings.Socket').LogServer(f"Selected modelFQN: {modelFQN}")
-        iris.cls('dc.musketeersbr.sqlembeddings.Socket').LogServer(f"Selected providerName: {providerName}")
-        iris.cls('dc.musketeersbr.sqlembeddings.Socket').LogServer(f"Selected model: {modelName}")
+        iris.cls(__name__).LogServer(f"Selected modelFQN: {modelFQN}")
+        iris.cls(__name__).LogServer(f"Selected providerName: {providerName}")
+        iris.cls(__name__).LogServer(f"Selected model: {modelName}")
 
         model, _ = load_provider(providerName, modelName, loadedProviders)
         providerClassName = iris.cls("dc.musketeersbr.sqlembeddings.Embeddings").GetEmbeddingsProvider(providerName)
-        return iris.cls(providerClassName), model
+        return iris.cls(providerClassName), model, modelName
 
     signal.signal(signal.SIGTERM, signal_handler)
     signal.signal(signal.SIGINT, signal_handler)
@@ -97,46 +97,47 @@ ClassMethod StartServerPy(port As %Integer) [ Language = python, Private ]
     loadedProviders = {}
     error_msg = None
 
-    iris.cls('dc.musketeersbr.sqlembeddings.Socket').LogServer(f"Server listening on port {port}...")
+    iris.cls(__name__).LogServer(f"Server listening on port {port}...", "INFO")
 
     try:
         while True:
             client_socket, addr = server_socket.accept()
-            iris.cls('dc.musketeersbr.sqlembeddings.Socket').LogServer(f"Connection from {addr}")
+            iris.cls(__name__).LogServer(f"Connection from {addr}")
 
             # if there was an error loading the model, send an error message
             if error_msg is not None:
                 request = json.dumps({'error': error_msg})
-                iris.cls('dc.musketeersbr.sqlembeddings.Socket').LogServer(f"Sending error: {request}")
+                iris.cls(__name__).LogServer(f"Sending error: {request}")
                 client_socket.sendall(request.encode('utf-8'))
             else:
                 request = client_socket.recv(99999)
                 request = request.decode('utf-8')
                 if request:
-                    iris.cls('dc.musketeersbr.sqlembeddings.Socket').LogServer(f"Received: {request}")
+                    iris.cls(__name__).LogServer(f"Received: {request}")
 
                     request = json.loads(request)
                     document = request['document']
-                    provider, model = get_provider_from_request(request, loadedProviders)
-                    iris.cls('dc.musketeersbr.sqlembeddings.Socket').LogServer(f"Selected provider: {provider}")
-                    embeddings_string = provider.ExecuteEmbeddings(document, model)
+                    provider, model, modelName = get_provider_from_request(request, loadedProviders)
+                    iris.cls(__name__).LogServer(f"Selected provider: {provider}")
+                    #; embeddings_string = provider.ExecuteEmbeddings(document, model)
+                    embeddings_string = provider.GetEmbeddings(document, model, modelName)
                     #; embeddings_string = embeddings_string.encode('utf-8')
                     response = json.dumps({'embeddings': embeddings_string})
                     client_socket.sendall(response.encode('utf-8'))
-                    iris.cls('dc.musketeersbr.sqlembeddings.Socket').LogServer(f"Response sent.")
+                    iris.cls(__name__).LogServer(f"Response sent.")
 
             client_socket.close()
 
     except Exception as e:
-        iris.cls('dc.musketeersbr.sqlembeddings.Socket').LogServer(f"Error: {e}")
+        iris.cls(__name__).LogServer(f"Error: {e}", "ERROR")
         error_msg = str(e)
         request = json.dumps({'error': error_msg})
-        iris.cls('dc.musketeersbr.sqlembeddings.Socket').LogServer(f"Sending error: {request}")
+        iris.cls(__name__).LogServer(f"Sending error: {request}")
         client_socket.sendall(request.encode('utf-8'))
 
     finally:
         server_socket.close()
-        iris.cls('dc.musketeersbr.sqlembeddings.Socket').LogServer("Server closed.")
+        iris.cls(__name__).LogServer("Server closed.", "INFO")
 }
 
 /// Starts a client to connect to the embeddings services server and send a message.
@@ -155,7 +156,7 @@ ClassMethod StartClient(pMessage As %DynamicObject, pServer As %String = "localh
         Set embeddings = ..StartClientPy(pMessage, pServer, pPort)
     } Catch e {
         Set error = $System.Status.GetErrorText(e.AsStatus())
-        Do ##class(dc.musketeersbr.sqlembeddings.Socket).LogClient(error)
+        Do ##class(dc.musketeersbr.sqlembeddings.Socket).LogClient(error, "ERROR")
         Throw e
     }
     Return embeddings
@@ -189,7 +190,7 @@ ClassMethod StartClientPy(message As %DynamicObject, server As %String = "localh
         :param sig: The signal number that was received.
         :param frame: The current stack frame.
         """
-        iris.cls('dc.musketeersbr.sqlembeddings.Socket').LogClient("Client shutting down gracefully...")
+        iris.cls(__name__).LogClient("Client shutting down gracefully...", "INFO")
         client_socket.close()
         sys.exit(0)
 
@@ -206,7 +207,7 @@ ClassMethod StartClientPy(message As %DynamicObject, server As %String = "localh
         s.bind(('', 0))
         available_port = s.getsockname()[1]
         s.close()
-        iris.cls('dc.musketeersbr.sqlembeddings.Socket').LogClient(f"Available port: {available_port}")
+        iris.cls(__name__).LogClient(f"Available port: {available_port}")
         return available_port
 
     def check_if_server_is_down(server, port):
@@ -223,7 +224,7 @@ ClassMethod StartClientPy(message As %DynamicObject, server As %String = "localh
         sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         sock.settimeout(5)
         result = sock.connect_ex((server, port))
-        iris.cls('dc.musketeersbr.sqlembeddings.Socket').LogClient(f"Server is {'up' if result == 0 else 'down'} on port {port}.")
+        iris.cls(__name__).LogClient(f"Server is {'up' if result == 0 else 'down'} on port {port}.")
         return result != 0
 
     def kill_server():
@@ -238,7 +239,7 @@ ClassMethod StartClientPy(message As %DynamicObject, server As %String = "localh
         Returns:
             None
         """
-        pid = iris.cls("dc.musketeersbr.sqlembeddings.Socket").GetCurrentProcessID()
+        pid = iris.cls(__name__).GetCurrentProcessID()
         try:
             os.kill(pid, signal.SIGINT)
         except:
@@ -253,16 +254,16 @@ ClassMethod StartClientPy(message As %DynamicObject, server As %String = "localh
     :return: None
     """
     def start_new_server(port):
-        curr_port = iris.cls("dc.musketeersbr.sqlembeddings.Socket").GetCurrentPort()
-        curr_pid = iris.cls("dc.musketeersbr.sqlembeddings.Socket").GetCurrentProcessID()
+        curr_port = iris.cls(__name__).GetCurrentPort()
+        curr_pid = iris.cls(__name__).GetCurrentProcessID()
         if curr_pid:
-            iris.cls('dc.musketeersbr.sqlembeddings.Socket').LogClient(f"Killing server on port {curr_port} and pid {curr_pid}...")
+            iris.cls(__name__).LogClient(f"Killing server on port {curr_port} and pid {curr_pid}...")
             kill_server()
 
-        iris.cls('dc.musketeersbr.sqlembeddings.Socket').LogClient(f"Starting a new server on port {port}...")
-        pid = iris.cls("dc.musketeersbr.sqlembeddings.Socket").StartServerBackground(port)
-        #; iris.cls("dc.musketeersbr.sqlembeddings.Socket").SaveCurrentProcessID(pid)
-        #; iris.cls("dc.musketeersbr.sqlembeddings.Socket").SaveCurrentPort(port)
+        iris.cls(__name__).LogClient(f"Starting a new server on port {port}...")
+        pid = iris.cls(__name__).StartServerBackground(port)
+        #; iris.cls(__name__).SaveCurrentProcessID(pid)
+        #; iris.cls(__name__).SaveCurrentPort(port)
 
         time.sleep(.5)
 
@@ -274,16 +275,16 @@ ClassMethod StartClientPy(message As %DynamicObject, server As %String = "localh
 
     try:
         if str(port) == '':
-            iris.cls('dc.musketeersbr.sqlembeddings.Socket').LogClient("No port specified, using current port...")
-            port = iris.cls("dc.musketeersbr.sqlembeddings.Socket").GetCurrentPort()
-            iris.cls('dc.musketeersbr.sqlembeddings.Socket').LogClient(f"Current port: {port}")
+            iris.cls(__name__).LogClient("No port specified, using current port...")
+            port = iris.cls(__name__).GetCurrentPort()
+            iris.cls(__name__).LogClient(f"Current port: {port}")
 
         if str(port) == '':
-            iris.cls('dc.musketeersbr.sqlembeddings.Socket').LogClient("No port specified, using default port...")
+            iris.cls(__name__).LogClient("No port specified, using default port...")
             port = get_available_port()
-            iris.cls('dc.musketeersbr.sqlembeddings.Socket').LogClient(f"Selected port: {port}")
+            iris.cls(__name__).LogClient(f"Selected port: {port}")
 
-        iris.cls('dc.musketeersbr.sqlembeddings.Socket').LogClient("Starting the client on port " + str(port) + "...")
+        iris.cls(__name__).LogClient("Starting the client on port " + str(port) + "...")
 
         if check_if_server_is_down(server, port):
             start_new_server(port)
@@ -304,9 +305,9 @@ ClassMethod StartClientPy(message As %DynamicObject, server As %String = "localh
         return response["embeddings"]
 
     except ConnectionRefusedError:
-        iris.cls('dc.musketeersbr.sqlembeddings.Socket').LogClient("[Error] Connection refused: Server may be down or not accepting connections.")
+        iris.cls(__name__).LogClient("[Error] Connection refused: Server may be down or not accepting connections.", "ERROR")
         start_new_server(port)
-        return iris.cls("dc.musketeersbr.sqlembeddings.Socket").StartClientPy(message, server, port)
+        return iris.cls(__name__).StartClientPy(message, server, port)
 
     finally:
         client_socket.close()
@@ -340,52 +341,18 @@ ClassMethod GetCurrentProcessID() As %Integer
     Return $GET(^IRIS.Temp("MusketeersBR","SQLEMBEDDINGS","PROCESSID"))
 }
 
-/// Gets a logger instance for logging information.
-/// 
-/// This method creates a logger instance and sets up basic logging configuration
-/// to log to a file at /tmp/sql-embeddings.log with level INFO.
-/// 
-/// @return A logger instance.
-ClassMethod GetLogger() As %SYS.Python [ Language = python ]
-{
-    import logging
-
-    logger = logging.getLogger(__name__)
-    logging.basicConfig(filename='/tmp/sql-embeddings.log', level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
-
-    return logger
-}
-
-/// Logs a message to the global log and the logger for this class.
-/// 
-/// @param message The message to be logged.
-ClassMethod Log(message As %String) [ Language = python ]
-{
-    import iris
-    #; logger = iris.cls("dc.musketeersbr.sqlembeddings.Socket").GetLogger()
-    #; logger.info(message)
-    print(message)
-    iris.cls('dc.musketeersbr.sqlembeddings.Socket').LogToGlobal(message)
-}
-
-/// Logs a message to the global ^IRIS.Temp("MusketeersBR","SQLEMBEDDINGS","LOG") array.
-/// 
-/// This method is used to log messages from the embeddings services.
-/// The messages are stored in a global array and can be accessed later.
-/// 
-/// @param pMessage The message to be logged.
-ClassMethod LogToGlobal(pMessage As %String)
-{
-    Set ^IRIS.Temp("MusketeersBR","SQLEMBEDDINGS","LOG",$I(^IRIS.Temp("MusketeersBR","SQLEMBEDDINGS","LOG"))) = pMessage
-}
-
 /// Logs a message to the server log.
 /// 
 /// @param message The message to be logged.
-ClassMethod LogServer(message As %String) [ Language = python ]
+ClassMethod LogServer(message As %String, mode As %String = "DEBUG") [ Language = python ]
 {
     import iris
-    iris.cls("dc.musketeersbr.sqlembeddings.Socket").Log(f"[Server] {message}")
+    if mode == "DEBUG":
+        iris.cls("dc.musketeersbr.sqlembeddings.Logger").Debug(f"[Server] {message}")
+    elif mode == "ERROR":
+        iris.cls("dc.musketeersbr.sqlembeddings.Logger").Error(f"[Server] {message}")
+    else:
+        iris.cls("dc.musketeersbr.sqlembeddings.Logger").Info(f"[Server] {message}")
 }
 
 /// Logs a message from the client.
@@ -395,10 +362,15 @@ ClassMethod LogServer(message As %String) [ Language = python ]
 /// came from the client.
 /// 
 /// @param message The message to be logged.
-ClassMethod LogClient(message As %String) [ Language = python ]
+ClassMethod LogClient(message As %String, mode As %String = "DEBUG") [ Language = python ]
 {
     import iris
-    iris.cls("dc.musketeersbr.sqlembeddings.Socket").Log(f"[Client] {message}")
+    if mode == "DEBUG":
+        iris.cls("dc.musketeersbr.sqlembeddings.Logger").Debug(f"[Client] {message}")
+    elif mode == "ERROR":
+        iris.cls("dc.musketeersbr.sqlembeddings.Logger").Error(f"[Client] {message}")
+    else:
+        iris.cls("dc.musketeersbr.sqlembeddings.Logger").Info(f"[Client] {message}")
 }
 
 }

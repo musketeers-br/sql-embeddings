@@ -68,7 +68,7 @@ Method Execute() As %Vector
 /// @return A vector of doubles representing the embeddings.
 ClassMethod GetEmbeddings(sentences, modelName = "fastembed/BAAI/bge-small-en-v1.5") As %Vector
 {
-    ;; Temporary solution to prevent errors when running in the demo environment; for some reason the models from fastembed are issuing errors in the demo environment
+    // todo: remove this temporary solution to prevent errors when running in the demo environment; for some reason the models from fastembed are issuing errors in the demo environment
     // get which model are disabled from environment variable SQLEMBEDDINGS_DISABLED_MODELS
     #; Set disabledModels = $SYSTEM.Util.GetEnviron("SQLEMBEDDINGS_DISABLED_MODELS")
     Set disabledProviders = "fastembed"
@@ -78,6 +78,7 @@ ClassMethod GetEmbeddings(sentences, modelName = "fastembed/BAAI/bge-small-en-v1
         // raise an exception if the model is disabled
         Throw ##class(%Exception.StatusException).CreateFromStatus($$$ERROR($$$GeneralError, "Sorry, the provider " _ providerName _ " is disabled on this system due instability reasons."))
     }
+    ////
 
     Set request = {"document": (sentences), "modelName": (modelName)}
     Set response = ##class(dc.musketeersbr.sqlembeddings.Socket).StartClient(request)

@@ -3,6 +3,7 @@ Class dc.musketeersbr.sqlembeddings.Embeddings Extends %RegisteredObject
 
 ClassMethod GetEmbeddingsProvider(providerName As %String) As %String
 {
+    Do ##class(dc.musketeersbr.sqlembeddings.Logger).Debug("GetEmbeddingsProvider: "_providerName)
     If providerName = "sentence_transformers" {
         Return "dc.musketeersbr.sqlembeddings.providers.SentenceTransformers"
     } ElseIf providerName = "fastembed" {
