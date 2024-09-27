@@ -78,11 +78,11 @@ Environment variables are used to store sensitive information like API keys and 
 
 There are two ways to configure these variables:
 
-When launching the Docker container, you can set the `OPENAI_KEY` the environment variables on a dotenv file using the -e flag:
+When launching the Docker container, you can set the `OPENAI_API_KEY` the environment variables on a dotenv file using the -e flag:
 
 ```bash
 # OpenAI API key
-export OPENAI_KEY=$OPENAI_KEY
+export OPENAI_API_KEY=$OPENAI_API_KEY
 ```
 
 ### Supported embedding models
