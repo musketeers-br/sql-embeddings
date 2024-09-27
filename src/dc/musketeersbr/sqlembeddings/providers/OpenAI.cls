@@ -1,5 +1,5 @@
 /// https://python.langchain.com/docs/integrations/text_embedding/openai/
-Class dc.musketeersbr.sqlembeddings.providers.OpenAI Extends %RegisteredObject
+Class dc.musketeersbr.sqlembeddings.providers.OpenAI Extends ProviderAbstract
 {
 
 /// Loads an ebedding model from the given model name.
