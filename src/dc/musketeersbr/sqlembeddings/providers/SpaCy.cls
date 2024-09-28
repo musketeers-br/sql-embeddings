@@ -9,7 +9,7 @@ ClassMethod ExecuteLoadModel(modelName As %String = "en_core_web_sm") As %SYS.Py
 {
     from langchain_community.embeddings.spacy_embeddings import SpacyEmbeddings
 
-    model = SpacyEmbeddings(model=modelName)
+    model = SpacyEmbeddings(model_name=modelName)
     return model
 }
 
