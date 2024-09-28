@@ -218,7 +218,3 @@ from testvector
 * [José Roberto Pereira](https://community.intersystems.com/user/jos%C3%A9-roberto-pereira-0)
 * [Henry Pereira](https://community.intersystems.com/user/henry-pereira)
 * [Henrique Dias](https://community.intersystems.com/user/henrique-dias-2)
-
-
-!pip3 install spacy
-!pip3 install https://github.com/explosion/spacy-models/releases/download/en_core_web_md-3.7.1/en_core_web_md-3.7.1-py3-none-any.whl
