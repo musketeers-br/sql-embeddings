@@ -3,7 +3,7 @@
   <Document name="sql-embeddings.ZPM">
     <Module>
       <Name>sql-embeddings</Name>
-      <Version>0.0.32</Version>
+      <Version>0.0.33</Version>
       <Description>Work with embeddings directly in SQL for InterSystems IRIS Vector Search</Description>
       <Packaging>module</Packaging>
       <SourcesRoot>src</SourcesRoot>
