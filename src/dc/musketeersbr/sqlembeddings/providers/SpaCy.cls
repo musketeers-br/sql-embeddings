@@ -1,11 +1,11 @@
-Class dc.musketeersbr.sqlembeddings.providers.SpaCy Extends %RegisteredObject
+Class dc.musketeersbr.sqlembeddings.providers.SpaCy Extends ProviderAbstract
 {
 
 /// Loads an ebedding model from the given model name.
 /// 
 /// @param modelName The name of the model to be loaded.
 /// @return The loaded model as a %SYS.Python object.
-ClassMethod LoadEmbeddingModel(modelName As %String = "en_core_web_md") As %SYS.Python [ Language = python ]
+ClassMethod ExecuteLoadModel(modelName As %String = "en_core_web_sm") As %SYS.Python [ Language = python ]
 {
     from langchain_community.embeddings.spacy_embeddings import SpacyEmbeddings
 
