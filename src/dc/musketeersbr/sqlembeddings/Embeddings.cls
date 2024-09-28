@@ -12,6 +12,8 @@ ClassMethod GetEmbeddingsProvider(providerName As %String) As %String
         Return "dc.musketeersbr.sqlembeddings.providers.OpenAI"
     } ElseIf providerName = "langchain" {
         Return "dc.musketeersbr.sqlembeddings.providers.FakeEmbeddings"
+    } ElseIf providerName = "spacy" {
+        Return "dc.musketeersbr.sqlembeddings.providers.SpaCy"
     } Else {
         Throw ##class(%Exception.General).%New("Invalid provider name")
     }

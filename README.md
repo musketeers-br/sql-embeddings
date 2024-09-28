@@ -135,6 +135,19 @@ set sc=$zpm("install sql-embeddings")
 
 Note that you'll need to install the libraries manually. If you don't, you'll get an error when you try to use the `dc.embedding` function.
 
+To use custom models like spaCy, run the following commands in the IRIS terminal:
+
+```bash
+$ docker-compose exec iris iris session iris -U IRISAPP
+```
+
+Execute the commands to install spaCy and download the specified model:
+
+```objectscript
+USER> !pip3 install spacy
+USER> !pip3 install https://github.com/explosion/spacy-models/releases/download/en_core_web_md-3.7.1/en_core_web_md-3.7.1-py3-none-any.whl
+```
+
 ## Usage
 
 ```sql
@@ -205,3 +218,7 @@ from testvector
 * [José Roberto Pereira](https://community.intersystems.com/user/jos%C3%A9-roberto-pereira-0)
 * [Henry Pereira](https://community.intersystems.com/user/henry-pereira)
 * [Henrique Dias](https://community.intersystems.com/user/henrique-dias-2)
+
+
+!pip3 install spacy
+!pip3 install https://github.com/explosion/spacy-models/releases/download/en_core_web_md-3.7.1/en_core_web_md-3.7.1-py3-none-any.whl
