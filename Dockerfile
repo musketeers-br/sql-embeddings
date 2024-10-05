@@ -3,9 +3,10 @@ FROM $IMAGE AS builder
 
 WORKDIR /home/irisowner/dev
 
-RUN pip install --upgrade --quiet langchain langchain-community langchain-openai fastembed
+RUN pip install --upgrade --quiet langchain langchain-community langchain-openai fastembed spacy
 RUN python3 -c 'from fastembed import TextEmbedding; embedding_model = TextEmbedding(model_name="BAAI/bge-small-en")'
 RUN python3 -c 'from fastembed import TextEmbedding; embedding_model = TextEmbedding(model_name="jinaai/jina-embeddings-v2-small-en")'
+RUN python3 -m spacy download en_core_web_sm
 
 ARG TESTS=0
 ARG MODULE="dc-sample"
