@@ -13,7 +13,7 @@ ClassMethod GetLogger() As %SYS.Python [ Language = python ]
 
     logger = logging.getLogger(__name__)
     # todo: set up logging level from environment variable and default it to INFO
-    logging.basicConfig(filename='/tmp/sql-embeddings.log', level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %(message)s')
+    logging.basicConfig(filename='/tmp/sql-embeddings.log', level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
     return logger
 }
