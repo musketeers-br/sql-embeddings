@@ -16,3 +16,13 @@ services:
     environment:
       - OPENAI_API_KEY=$OPENAI_API_KEY
       - SQLEMBEDDINGS_DISABLED_MODELS=$SQLEMBEDDINGS_DISABLED_MODELS
+
+  jupyter:
+    image: quay.io/jupyter/base-notebook
+    ports:
+      - 39999:8888
+    volumes:
+      - ./jupyter:/home/jovyan/work
+    environment:
+      - OPENAI_API_KEY=$OPENAI_API_KEY
+    command: ["start-notebook.py", "--NotebookApp.token='123'"]

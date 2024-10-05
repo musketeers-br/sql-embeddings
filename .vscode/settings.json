@@ -16,7 +16,8 @@
         "internalPort": 52773
       },
       "links": {
-        "UnitTest Portal": "${serverUrl}/csp/sys/%25UnitTest.Portal.Home.cls?$NAMESPACE=IRISAPP"
+        "UnitTest Portal": "${serverUrl}/csp/sys/%25UnitTest.Portal.Home.cls?$NAMESPACE=IRISAPP",
+        "Jupyter Notebook": "http://localhost:39999/"
       }
     },
     "intersystems.testingManager.client.relativeTestRoot": "tests"

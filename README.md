@@ -93,30 +93,10 @@ Currently, the project supports the following embeddings models/services, here c
 |-------------|----------------------|
 | fastembed | [FastEmbed](https://qdrant.github.io/fastembed/examples/Supported_Models/#supported-text-embedding-models) |
 | openai | [OpenAI](https://platform.openai.com/docs/models/embeddings) |
-| sentence_transformers | [SentenceTransformers](https://sbert.net/docs/sentence_transformer/pretrained_models.html#original-models) |
+| sentence_transformers | [Sentence Transformers](https://sbert.net/docs/sentence_transformer/pretrained_models.html#original-models) |
 | langchain | [Langchain (just fake emebeddings for testing purposes)](https://python.langchain.com/docs/integrations/text_embedding/fake/) |
 
 By default, the project will use FastEmbed embeddings model. It's free and you don't need an API key to use it.
-
-### Docker
-
-For your convenience, the project uses [Docker Compose](https://docs.docker.com/compose/) to build and run the containers.
-
-Note that in the case of SentenceTransformers, you'll need to install the SentenceTransformers library manually, since this library is big and takes a long time to install making the build process slow.
-
-Clone/git pull the repo into any local directory
-
-```
-$ git clone https://github.com/musketeers-br/sql-embeddings
-```
-
-Open the terminal in this directory and run:
-
-```
-$ docker-compose build
-
-$ docker-compose up -d
-```
 
 ### IPM
 
@@ -146,6 +126,26 @@ Execute the commands to install spaCy and download the specified model:
 ```objectscript
 USER> !pip3 install spacy
 USER> !pip3 install https://github.com/explosion/spacy-models/releases/download/en_core_web_md-3.7.1/en_core_web_md-3.7.1-py3-none-any.whl
+```
+
+### Docker
+
+For your convenience, the project uses [Docker Compose](https://docs.docker.com/compose/) to build and run the containers.
+
+Note that in the case of SentenceTransformers, you'll need to install the SentenceTransformers library manually, since this library is big and takes a long time to install making the build process slow.
+
+Clone/git pull the repo into any local directory
+
+```
+$ git clone https://github.com/musketeers-br/sql-embeddings
+```
+
+Open the terminal in this directory and run:
+
+```
+$ docker-compose build
+
+$ docker-compose up -d
 ```
 
 ## Usage
