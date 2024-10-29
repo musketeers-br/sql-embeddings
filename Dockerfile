@@ -3,6 +3,7 @@ FROM $IMAGE AS builder
 
 WORKDIR /home/irisowner/dev
 
+RUN apt-get update && apt-get install -y nano
 RUN pip install --upgrade --quiet langchain langchain-community langchain-openai fastembed spacy
 RUN python3 -c 'from fastembed import TextEmbedding; embedding_model = TextEmbedding(model_name="BAAI/bge-small-en")'
 RUN python3 -c 'from fastembed import TextEmbedding; embedding_model = TextEmbedding(model_name="jinaai/jina-embeddings-v2-small-en")'

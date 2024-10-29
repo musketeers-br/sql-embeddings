@@ -154,6 +154,13 @@ $ docker-compose up -d
 dc.embedding('<text>', '<provider>/<modelName>')
 ```
 
+You can control the logging level and file name using the following environment variables:
+
+```bash
+export SQLEMBEDDINGS_LOGGER_SETTINGS_LOG_LEVEL=INFO
+export SQLEMBEDDINGS_LOGGER_SETTINGS_LOG_FILE=/tmp/sql-embeddings.log
+```
+
 ## Examples
 To get started, you can use the following SQL query to generate an embedding for the word 'test':
 

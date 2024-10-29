@@ -10,12 +10,34 @@ Class dc.musketeersbr.sqlembeddings.Logger Extends %RegisteredObject
 ClassMethod GetLogger() As %SYS.Python [ Language = python ]
 {
     import logging
+    import iris
 
     logger = logging.getLogger(__name__)
-    # todo: set up logging level from environment variable and default it to INFO
-    logging.basicConfig(filename='/tmp/sql-embeddings.log', level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+    settings = iris.cls(__name__).GetLoggerSettings()
+    logLevel = settings["log_level"]
+    logFileName = settings["log_file_name"]
+    logging.basicConfig(filename=logFileName, level=logLevel, format='%(asctime)s - %(levelname)s - %(message)s')
 
     return logger
+}
+
+ClassMethod GetLoggerSettings() As %SYS.Python [ Language = python ]
+{
+    import os
+    import logging
+
+    logLevel = os.environ.get('SQLEMBEDDINGS_LOGGER_SETTINGS_LOG_LEVEL', logging.INFO)
+    try:
+        logLevel = getattr(logging, logLevel)
+    except:
+        logLevel = logging.INFO
+
+    logFileName = os.environ.get('SQLEMBEDDINGS_LOGGER_SETTINGS_LOG_FILE_NAME', '/tmp/sql-embeddings.log')
+    
+    return {
+        "log_level": logLevel,
+        "log_file_name": logFileName
+    }
 }
 
 /// Logs a message to the global log and the logger for this class.
@@ -26,8 +48,6 @@ ClassMethod Info(message As %String) [ Language = python ]
     import iris
     logger = iris.cls(__name__).GetLogger()
     logger.info(message)
-    print(message)
-    #; iris.cls(__name__).LogToGlobal(message)
 }
 
 ClassMethod Debug(message As %String) [ Language = python ]
@@ -35,8 +55,6 @@ ClassMethod Debug(message As %String) [ Language = python ]
     import iris
     logger = iris.cls(__name__).GetLogger()
     logger.debug(message)
-    #; print(message)
-    #; iris.cls(__name__).LogToGlobal(message)
 }
 
 ClassMethod Error(message As %String) [ Language = python ]
@@ -44,19 +62,6 @@ ClassMethod Error(message As %String) [ Language = python ]
     import iris
     logger = iris.cls(__name__).GetLogger()
     logger.error(message)
-    print(message)
-    #; iris.cls(__name__).LogToGlobal(message)
-}
-
-/// Logs a message to the global ^IRIS.Temp("MusketeersBR","SQLEMBEDDINGS","LOG") array.
-/// 
-/// This method is used to log messages from the embeddings services.
-/// The messages are stored in a global array and can be accessed later.
-/// 
-/// @param pMessage The message to be logged.
-ClassMethod LogToGlobal(pMessage As %String)
-{
-    Set ^IRIS.Temp("MusketeersBR","SQLEMBEDDINGS","LOG",$I(^IRIS.Temp("MusketeersBR","SQLEMBEDDINGS","LOG"))) = pMessage
 }
 
 }
